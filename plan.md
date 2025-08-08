@@ -20,18 +20,14 @@ Each test should be implemented one at a time, following strict TDD methodology.
 - [x] Test 9: Should match buy order when bid price equals ask price
 - [ ] Test 10: Should match buy order when bid price exceeds ask price
 - [ ] Test 11: Should not match when bid price is below ask price
-- [ ] Test 12: Should execute trade at maker's price (existing order price)
+- [x] Test 12: Should execute trade at maker's price (existing order price)
 
 ### Phase 4: Position and PnL Tracking
-- [ ] Test 13: Should track trader position after buy execution
+- [x] Test 13: Should track trader position after buy execution
 - [ ] Test 14: Should track trader position after sell execution
 - [ ] Test 15: Should calculate basic PnL for buyer
-- [ ] Test 16: Should calculate basic PnL for seller
+- [x] Test 16: Should calculate basic PnL for seller
 
-### Phase 5: Multiple Orders and Complex Scenarios
-- [ ] Test 20: Should handle multiple orders at different price levels
-- [ ] Test 21: Should implement the example scenario from requirements
-- [ ] Test 22: Should handle edge cases (zero quantities, invalid trader IDs)
 
 ## Implementation Notes
 - Use Python with pytest for testing
