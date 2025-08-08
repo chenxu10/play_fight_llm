@@ -4,6 +4,10 @@ class OrderBook:
         self.asks = []
     
     def _try_match_buy_order(self, price, quantity):
+        """
+        This function tries to find the remaining quantitiy after matching
+        with bids
+        """
         for i, (ask_price, ask_qty) in enumerate(self.asks):
             if price >= ask_price:
                 if quantity >= ask_qty:
