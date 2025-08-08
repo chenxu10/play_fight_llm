@@ -102,3 +102,23 @@ def test_should_calculate_basic_pnl_for_seller():
     # Seller PnL = cash_received = +$2940
     pnl_seller = order_book.get_trader_pnl("trader_a")
     assert pnl_seller == 2940.0
+
+
+def test_should_match_sell_order_against_existing_buy_order():
+    order_book = OrderBook()
+    order_book.place_order("trader_a", "BUY", 52.0, 100)   # existing buy order at $52
+    trades = order_book.place_order("trader_b", "SELL", 50.0, 60)  # sell at $50 (lower than buy)
+    
+    # Should execute at maker's price ($52, the existing buy order price)
+    assert len(trades) == 1
+    price, quantity, buyer_id, seller_id = trades[0]
+    assert price == 52.0  # maker's price (existing buy order)
+    assert quantity == 60
+    assert buyer_id == "trader_a"
+    assert seller_id == "trader_b"
+    
+    # Check remaining orders in book
+    state = order_book.get_order_book()
+    assert len(state["bids"]) == 1
+    assert state["bids"][0] == (52.0, 40)  # 100 - 60 = 40 remaining
+    assert len(state["asks"]) == 0  # sell order completely filled

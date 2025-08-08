@@ -40,6 +40,46 @@ class OrderBook:
                     break
         return quantity, trades
 
+    def _try_match_sell_order(self, seller_id, price, quantity):
+        """
+        This function tries to match sell orders against existing buy orders
+        """
+        trades = []
+        # Sort bids by price descending (highest price first) for matching
+        sorted_bids = sorted(enumerate(self.bids), key=lambda x: x[1][0], reverse=True)
+        
+        for original_index, (bid_price, bid_qty, buyer_id) in sorted_bids:
+            if price <= bid_price:
+                if quantity >= bid_qty:
+                    # Complete fill of buy order
+                    trades.append((bid_price, bid_qty, buyer_id, seller_id))
+                    # Update positions
+                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + bid_qty
+                    self.positions[seller_id] = self.positions.get(seller_id, 0) - bid_qty
+                    # Update PnL
+                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (bid_price * bid_qty)  # buyer pays cash
+                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (bid_price * bid_qty)  # seller receives cash
+                    quantity -= bid_qty
+                    # Remove the matched bid order
+                    del self.bids[original_index]
+                    # Re-sort indexes after deletion
+                    sorted_bids = [(i if i < original_index else i-1, order) for i, order in sorted_bids if i != original_index]
+                    if quantity == 0:
+                        break
+                else:
+                    # Partial fill of buy order
+                    trades.append((bid_price, quantity, buyer_id, seller_id))
+                    # Update positions
+                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
+                    self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
+                    # Update PnL
+                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (bid_price * quantity)  # buyer pays cash
+                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (bid_price * quantity)  # seller receives cash
+                    self.bids[original_index] = (bid_price, bid_qty - quantity, buyer_id)
+                    quantity = 0
+                    break
+        return quantity, trades
+
     def place_order(self, trader_id, side, price, quantity):
         if side == "BUY":
             remaining_quantity, trades = self._try_match_buy_order(trader_id, price, quantity)
@@ -47,8 +87,10 @@ class OrderBook:
                 self.bids.append((price, remaining_quantity, trader_id))
             return trades
         elif side == "SELL":
-            self.asks.append((price, quantity, trader_id))
-            return []
+            remaining_quantity, trades = self._try_match_sell_order(trader_id, price, quantity)
+            if remaining_quantity > 0:
+                self.asks.append((price, remaining_quantity, trader_id))
+            return trades
     
     def get_order_book(self):
         sorted_bids = sorted(self.bids, key=lambda x: x[0], reverse=True)
