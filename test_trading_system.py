@@ -62,3 +62,16 @@ def test_should_match_buy_order_when_bid_price_equals_ask_price():
     assert state["asks"][0] == (50.0, 40)  # 100 - 60 = 40 remaining
     # Buy order should be completely filled (removed from book)
     assert len(state["bids"]) == 0
+
+
+def test_should_execute_trade_at_makers_price():
+    order_book = OrderBook()
+    order_book.place_order("trader_a", "SELL", 49.0, 100)  # maker: sell at 49
+    trades = order_book.place_order("trader_b", "BUY", 52.0, 60)  # taker: willing to pay 52
+    # Trade should execute at maker's price (49.0), not taker's price (52.0)
+    assert len(trades) == 1
+    price, quantity, buyer_id, seller_id = trades[0]
+    assert price == 49.0  # maker's price
+    assert quantity == 60
+    assert buyer_id == "trader_b"
+    assert seller_id == "trader_a"
