@@ -3,6 +3,7 @@ class OrderBook:
         self.bids = []
         self.asks = []
         self.positions = {}  # trader_id -> position (positive = long, negative = short)
+        self.pnl = {}  # trader_id -> profit/loss from trades
     
     def _try_match_buy_order(self, buyer_id, price, quantity):
         """
@@ -18,6 +19,9 @@ class OrderBook:
                     # Update positions
                     self.positions[buyer_id] = self.positions.get(buyer_id, 0) + ask_qty
                     self.positions[seller_id] = self.positions.get(seller_id, 0) - ask_qty
+                    # Update PnL
+                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (ask_price * ask_qty)  # buyer pays cash
+                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (ask_price * ask_qty)  # seller receives cash
                     quantity -= ask_qty
                     del self.asks[i]
                     if quantity == 0:
@@ -28,6 +32,9 @@ class OrderBook:
                     # Update positions
                     self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
                     self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
+                    # Update PnL
+                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (ask_price * quantity)  # buyer pays cash
+                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (ask_price * quantity)  # seller receives cash
                     self.asks[i] = (ask_price, ask_qty - quantity, seller_id)
                     quantity = 0
                     break
@@ -56,3 +63,6 @@ class OrderBook:
     
     def get_trader_position(self, trader_id):
         return self.positions.get(trader_id, 0)
+    
+    def get_trader_pnl(self, trader_id):
+        return self.pnl.get(trader_id, 0.0)

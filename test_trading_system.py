@@ -89,3 +89,16 @@ def test_should_track_trader_position_after_buy_execution():
     # After selling 60 shares, trader_a should have position -60
     position_a = order_book.get_trader_position("trader_a")
     assert position_a == -60
+
+
+def test_should_calculate_basic_pnl_for_seller():
+    order_book = OrderBook()
+    order_book.place_order("trader_a", "SELL", 49.0, 100)  # seller: sell at $49
+    order_book.place_order("trader_b", "BUY", 52.0, 60)    # buyer: willing to pay $52
+    
+    # Trade executes at maker's price ($49)
+    # Seller gets: $49 * 60 = $2940 (positive cash flow)
+    # Seller position: -60 shares (short)
+    # Seller PnL = cash_received = +$2940
+    pnl_seller = order_book.get_trader_pnl("trader_a")
+    assert pnl_seller == 2940.0
