@@ -13,7 +13,7 @@ Each test should be implemented one at a time, following strict TDD methodology.
 
 ### Phase 2: Order Book Sorting
 - [x] Test 6: Should sort buy orders by price descending (highest first)
-- [ ] Test 7: Should sort sell orders by price ascending (lowest first)
+- [x] Test 7: Should sort sell orders by price ascending (lowest first)
 - [ ] Test 8: Should maintain price-time priority for same-price orders
 
 ### Phase 3: Basic Matching Logic

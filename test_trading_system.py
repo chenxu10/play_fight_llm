@@ -49,3 +49,15 @@ def test_should_sort_sell_orders_by_price_ascending():
     assert state["asks"][0] == (48.0, 50)   # lowest price first
     assert state["asks"][1] == (50.0, 100)
     assert state["asks"][2] == (52.0, 75)   # highest price last
+
+
+def test_should_match_buy_order_when_bid_price_equals_ask_price():
+    order_book = OrderBook()
+    order_book.place_order("trader_a", "SELL", 50.0, 100)  # existing sell order
+    order_book.place_order("trader_b", "BUY", 50.0, 60)    # matching buy order
+    state = order_book.get_order_book()
+    # After match, sell order should have remaining quantity
+    assert len(state["asks"]) == 1
+    assert state["asks"][0] == (50.0, 40)  # 100 - 60 = 40 remaining
+    # Buy order should be completely filled (removed from book)
+    assert len(state["bids"]) == 0
