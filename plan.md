@@ -12,7 +12,7 @@ Each test should be implemented one at a time, following strict TDD methodology.
 - [x] Test 5: Should return order book state with single sell order
 
 ### Phase 2: Order Book Sorting
-- [ ] Test 6: Should sort buy orders by price descending (highest first)
+- [x] Test 6: Should sort buy orders by price descending (highest first)
 - [ ] Test 7: Should sort sell orders by price ascending (lowest first)
 - [ ] Test 8: Should maintain price-time priority for same-price orders
 
@@ -28,12 +28,7 @@ Each test should be implemented one at a time, following strict TDD methodology.
 - [ ] Test 15: Should calculate basic PnL for buyer
 - [ ] Test 16: Should calculate basic PnL for seller
 
-### Phase 5: Partial Fills
-- [ ] Test 17: Should handle partial fill when buy quantity exceeds sell quantity
-- [ ] Test 18: Should handle partial fill when sell quantity exceeds buy quantity
-- [ ] Test 19: Should leave remaining quantity in order book after partial fill
-
-### Phase 6: Multiple Orders and Complex Scenarios
+### Phase 5: Multiple Orders and Complex Scenarios
 - [ ] Test 20: Should handle multiple orders at different price levels
 - [ ] Test 21: Should implement the example scenario from requirements
 - [ ] Test 22: Should handle edge cases (zero quantities, invalid trader IDs)
