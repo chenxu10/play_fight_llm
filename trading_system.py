@@ -10,4 +10,6 @@ class OrderBook:
             self.asks.append((price, quantity))
     
     def get_order_book(self):
-        return {"bids": self.bids, "asks": self.asks}
+        return {
+            'bids':self.bids,
+            'asks':self.asks}
