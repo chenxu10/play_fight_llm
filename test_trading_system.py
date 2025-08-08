@@ -75,3 +75,17 @@ def test_should_execute_trade_at_makers_price():
     assert quantity == 60
     assert buyer_id == "trader_b"
     assert seller_id == "trader_a"
+
+
+def test_should_track_trader_position_after_buy_execution():
+    order_book = OrderBook()
+    order_book.place_order("trader_a", "SELL", 50.0, 100)  # seller
+    order_book.place_order("trader_b", "BUY", 50.0, 60)    # buyer
+    
+    # After buying 60 shares, trader_b should have position +60
+    position_b = order_book.get_trader_position("trader_b")
+    assert position_b == 60
+    
+    # After selling 60 shares, trader_a should have position -60
+    position_a = order_book.get_trader_position("trader_a")
+    assert position_a == -60

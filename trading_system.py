@@ -2,6 +2,7 @@ class OrderBook:
     def __init__(self):
         self.bids = []
         self.asks = []
+        self.positions = {}  # trader_id -> position (positive = long, negative = short)
     
     def _try_match_buy_order(self, buyer_id, price, quantity):
         """
@@ -14,6 +15,9 @@ class OrderBook:
                 if quantity >= ask_qty:
                     # Complete fill of sell order
                     trades.append((ask_price, ask_qty, buyer_id, seller_id))
+                    # Update positions
+                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + ask_qty
+                    self.positions[seller_id] = self.positions.get(seller_id, 0) - ask_qty
                     quantity -= ask_qty
                     del self.asks[i]
                     if quantity == 0:
@@ -21,6 +25,9 @@ class OrderBook:
                 else:
                     # Partial fill of sell order
                     trades.append((ask_price, quantity, buyer_id, seller_id))
+                    # Update positions
+                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
+                    self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
                     self.asks[i] = (ask_price, ask_qty - quantity, seller_id)
                     quantity = 0
                     break
@@ -46,3 +53,6 @@ class OrderBook:
             'bids': bids_simple,
             'asks': asks_simple
         }
+    
+    def get_trader_position(self, trader_id):
+        return self.positions.get(trader_id, 0)
