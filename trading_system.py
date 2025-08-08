@@ -10,6 +10,8 @@ class OrderBook:
             self.asks.append((price, quantity))
     
     def get_order_book(self):
+        sorted_bids = sorted(self.bids, key=lambda x: x[0], reverse=True)
         return {
-            'bids':self.bids,
-            'asks':self.asks}
+            'bids': sorted_bids,
+            'asks': self.asks
+        }
