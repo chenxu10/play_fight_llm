@@ -26,3 +26,12 @@ def test_should_return_order_book_state_with_single_buy_order():
     assert "bids" in state
     assert len(state["bids"]) == 1
     assert state["bids"][0] == (50.0, 100)
+
+
+def test_should_return_order_book_state_with_single_sell_order():
+    order_book = OrderBook()
+    order_book.place_order("trader_b", "SELL", 49.0, 60)
+    state = order_book.get_order_book()
+    assert "asks" in state
+    assert len(state["asks"]) == 1
+    assert state["asks"][0] == (49.0, 60)
