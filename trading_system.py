@@ -1,102 +1,97 @@
+import heapq
+from typing import List, Tuple, Dict
+
 class OrderBook:
     def __init__(self):
-        self.bids = []
-        self.asks = []
+        self.bids = []  # max-heap: store as (-price, quantity, trader_id)
+        self.asks = []  # min-heap: store as (price, quantity, trader_id)
         self.positions = {}  # trader_id -> position (positive = long, negative = short)
         self.pnl = {}  # trader_id -> profit/loss from trades
     
     def _try_match_buy_order(self, buyer_id, price, quantity):
         """
-        This function tries to find the remaining quantitiy after matching
-        with bids
+        Match buy order against existing sell orders (asks heap)
+        Asks are min-heap, so we can efficiently get lowest price
         """
         trades = []
-        for i, (ask_price, ask_qty, seller_id) in enumerate(self.asks):
-            if price >= ask_price:
-                if quantity >= ask_qty:
-                    # Complete fill of sell order
-                    trades.append((ask_price, ask_qty, buyer_id, seller_id))
-                    # Update positions
-                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + ask_qty
-                    self.positions[seller_id] = self.positions.get(seller_id, 0) - ask_qty
-                    # Update PnL
-                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (ask_price * ask_qty)  # buyer pays cash
-                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (ask_price * ask_qty)  # seller receives cash
-                    quantity -= ask_qty
-                    del self.asks[i]
-                    if quantity == 0:
-                        break
-                else:
-                    # Partial fill of sell order
-                    trades.append((ask_price, quantity, buyer_id, seller_id))
-                    # Update positions
-                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
-                    self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
-                    # Update PnL
-                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (ask_price * quantity)  # buyer pays cash
-                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (ask_price * quantity)  # seller receives cash
-                    self.asks[i] = (ask_price, ask_qty - quantity, seller_id)
-                    quantity = 0
-                    break
+        while self.asks and quantity > 0 and price >= self.asks[0][0]:
+            ask_price, ask_qty, seller_id = heapq.heappop(self.asks)
+            
+            if quantity >= ask_qty:
+                # Complete fill of sell order
+                trades.append((ask_price, ask_qty, buyer_id, seller_id))
+                # Update positions and PnL
+                self.positions[buyer_id] = self.positions.get(buyer_id, 0) + ask_qty
+                self.positions[seller_id] = self.positions.get(seller_id, 0) - ask_qty
+                self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (ask_price * ask_qty)
+                self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (ask_price * ask_qty)
+                quantity -= ask_qty
+            else:
+                # Partial fill of sell order - put remainder back
+                trades.append((ask_price, quantity, buyer_id, seller_id))
+                # Update positions and PnL
+                self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
+                self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
+                self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (ask_price * quantity)
+                self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (ask_price * quantity)
+                heapq.heappush(self.asks, (ask_price, ask_qty - quantity, seller_id))
+                quantity = 0
+        
         return quantity, trades
 
     def _try_match_sell_order(self, seller_id, price, quantity):
         """
-        This function tries to match sell orders against existing buy orders
+        Match sell order against existing buy orders (bids max-heap)
+        Bids are max-heap (stored as negative), so we can efficiently get highest price
         """
         trades = []
-        # Sort bids by price descending (highest price first) for matching
-        sorted_bids = sorted(enumerate(self.bids), key=lambda x: x[1][0], reverse=True)
+        while self.bids and quantity > 0 and price <= -self.bids[0][0]:
+            neg_bid_price, bid_qty, buyer_id = heapq.heappop(self.bids)
+            bid_price = -neg_bid_price  # Convert back from negative
+            
+            if quantity >= bid_qty:
+                # Complete fill of buy order
+                trades.append((bid_price, bid_qty, buyer_id, seller_id))
+                # Update positions and PnL
+                self.positions[buyer_id] = self.positions.get(buyer_id, 0) + bid_qty
+                self.positions[seller_id] = self.positions.get(seller_id, 0) - bid_qty
+                self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (bid_price * bid_qty)
+                self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (bid_price * bid_qty)
+                quantity -= bid_qty
+            else:
+                # Partial fill of buy order - put remainder back
+                trades.append((bid_price, quantity, buyer_id, seller_id))
+                # Update positions and PnL
+                self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
+                self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
+                self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (bid_price * quantity)
+                self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (bid_price * quantity)
+                heapq.heappush(self.bids, (-bid_price, bid_qty - quantity, buyer_id))
+                quantity = 0
         
-        for original_index, (bid_price, bid_qty, buyer_id) in sorted_bids:
-            if price <= bid_price:
-                if quantity >= bid_qty:
-                    # Complete fill of buy order
-                    trades.append((bid_price, bid_qty, buyer_id, seller_id))
-                    # Update positions
-                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + bid_qty
-                    self.positions[seller_id] = self.positions.get(seller_id, 0) - bid_qty
-                    # Update PnL
-                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (bid_price * bid_qty)  # buyer pays cash
-                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (bid_price * bid_qty)  # seller receives cash
-                    quantity -= bid_qty
-                    # Remove the matched bid order
-                    del self.bids[original_index]
-                    # Re-sort indexes after deletion
-                    sorted_bids = [(i if i < original_index else i-1, order) for i, order in sorted_bids if i != original_index]
-                    if quantity == 0:
-                        break
-                else:
-                    # Partial fill of buy order
-                    trades.append((bid_price, quantity, buyer_id, seller_id))
-                    # Update positions
-                    self.positions[buyer_id] = self.positions.get(buyer_id, 0) + quantity
-                    self.positions[seller_id] = self.positions.get(seller_id, 0) - quantity
-                    # Update PnL
-                    self.pnl[buyer_id] = self.pnl.get(buyer_id, 0) - (bid_price * quantity)  # buyer pays cash
-                    self.pnl[seller_id] = self.pnl.get(seller_id, 0) + (bid_price * quantity)  # seller receives cash
-                    self.bids[original_index] = (bid_price, bid_qty - quantity, buyer_id)
-                    quantity = 0
-                    break
         return quantity, trades
 
     def place_order(self, trader_id, side, price, quantity):
         if side == "BUY":
             remaining_quantity, trades = self._try_match_buy_order(trader_id, price, quantity)
             if remaining_quantity > 0:
-                self.bids.append((price, remaining_quantity, trader_id))
+                heapq.heappush(self.bids, (-price, remaining_quantity, trader_id))  # negative for max-heap
             return trades
         elif side == "SELL":
             remaining_quantity, trades = self._try_match_sell_order(trader_id, price, quantity)
             if remaining_quantity > 0:
-                self.asks.append((price, remaining_quantity, trader_id))
+                heapq.heappush(self.asks, (price, remaining_quantity, trader_id))  # positive for min-heap
             return trades
     
     def get_order_book(self):
-        sorted_bids = sorted(self.bids, key=lambda x: x[0], reverse=True)
-        sorted_asks = sorted(self.asks, key=lambda x: x[0])
+        # Heaps are already ordered! Just need to convert format
+        # For bids: convert negative prices back to positive and sort by negative (max-heap order)
+        # For asks: already in min-heap order
+        sorted_bids = sorted(self.bids, key=lambda x: x[0])  # sort by negative price (highest first)
+        sorted_asks = sorted(self.asks, key=lambda x: x[0])  # sort by positive price (lowest first)
+        
         # Return just price and quantity for backward compatibility
-        bids_simple = [(price, qty) for price, qty, trader_id in sorted_bids]
+        bids_simple = [(-neg_price, qty) for neg_price, qty, trader_id in sorted_bids]
         asks_simple = [(price, qty) for price, qty, trader_id in sorted_asks]
         return {
             'bids': bids_simple,
