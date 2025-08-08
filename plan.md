@@ -5,7 +5,7 @@
 Each test should be implemented one at a time, following strict TDD methodology.
 
 ### Phase 1: Basic Order Book Structure
-- [ ] Test 1: Should create empty order book
+- [x] Test 1: Should create empty order book
 - [ ] Test 2: Should place a single buy order
 - [ ] Test 3: Should place a single sell order
 - [ ] Test 4: Should return order book state with single buy order
