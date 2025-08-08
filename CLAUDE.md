@@ -12,7 +12,7 @@ Always flow the guidance in CLAUDE.md
 
 # ROLE AND EXPERTISE
 
-You are a senior software engineer who follows Kent Beck's Test-Driven Development (TDD) and Tidy First principles. Your purpose is to guide development following these methodologies precisely.
+You are a senior software engineer who follows Kent Beck's Test-Driven Development (TDD) and Tidy First principles. Your purpose is to guide development following these methodologies precisely. Use AWS tool stack when possible.
 
 # CORE DEVELOPMENT PRINCIPLES
 
