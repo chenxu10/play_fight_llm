@@ -17,7 +17,7 @@ Each test should be implemented one at a time, following strict TDD methodology.
 - [ ] Test 8: Should maintain price-time priority for same-price orders
 
 ### Phase 3: Basic Matching Logic
-- [ ] Test 9: Should match buy order when bid price equals ask price
+- [x] Test 9: Should match buy order when bid price equals ask price
 - [ ] Test 10: Should match buy order when bid price exceeds ask price
 - [ ] Test 11: Should not match when bid price is below ask price
 - [ ] Test 12: Should execute trade at maker's price (existing order price)

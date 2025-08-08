@@ -34,6 +34,7 @@ def test_should_sort_buy_orders_by_price_descending():
     order_book.place_order("trader_1", "BUY", 50.0, 100)
     order_book.place_order("trader_2", "BUY", 52.0, 50)
     order_book.place_order("trader_3", "BUY", 48.0, 75)
+    
     state = order_book.get_order_book()
     assert state["bids"][0] == (52.0, 50)  # highest price first
     assert state["bids"][1] == (50.0, 100)

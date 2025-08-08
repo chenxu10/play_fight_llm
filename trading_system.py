@@ -3,25 +3,23 @@ class OrderBook:
         self.bids = []
         self.asks = []
     
+    def _try_match_buy_order(self, price, quantity):
+        for i, (ask_price, ask_qty) in enumerate(self.asks):
+            if price >= ask_price:
+                if quantity >= ask_qty:
+                    quantity -= ask_qty
+                    del self.asks[i]
+                    return quantity
+                else:
+                    self.asks[i] = (ask_price, ask_qty - quantity)
+                    return 0
+        return quantity
+
     def place_order(self, trader_id, side, price, quantity):
         if side == "BUY":
-            # Check for matching sell orders
-            for i, (ask_price, ask_qty) in enumerate(self.asks):
-                if price >= ask_price:
-                    # Match found - execute trade
-                    if quantity >= ask_qty:
-                        # Buy order quantity >= sell order quantity
-                        quantity -= ask_qty
-                        del self.asks[i]
-                        if quantity > 0:
-                            self.bids.append((price, quantity))
-                        return
-                    else:
-                        # Partial fill - sell order has remaining quantity
-                        self.asks[i] = (ask_price, ask_qty - quantity)
-                        return
-            # No match found, add to bids
-            self.bids.append((price, quantity))
+            remaining_quantity = self._try_match_buy_order(price, quantity)
+            if remaining_quantity > 0:
+                self.bids.append((price, remaining_quantity))
         elif side == "SELL":
             self.asks.append((price, quantity))
     
