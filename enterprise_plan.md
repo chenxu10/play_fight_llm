@@ -6,8 +6,8 @@ Each test should be implemented one at a time, following strict TDD methodology.
 
 ### Phase 1: Basic MarketDataService Structure
 - [x] Test 1: Should create empty MarketDataService
-- [ ] Test 2: Should initialize with empty subscribers dictionary
-- [ ] Test 3: Should have subscribe_user method
+- [x] Test 2: Should initialize with empty subscribers dictionary
+- [x] Test 3: Should have subscribe_user method
 - [ ] Test 4: Should have unsubscribe_user method
 - [ ] Test 5: Should have broadcast method capability
 
