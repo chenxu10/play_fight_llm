@@ -1,2 +1,3 @@
 class MarketDataService:
-    pass
+    def __init__(self):
+        self.subscribers = {}
